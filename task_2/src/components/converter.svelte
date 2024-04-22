@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import { fetchCurrencies } from "../services/currencyApi";
   import type { CurrencyData } from "../types/currency";
 
@@ -9,16 +9,15 @@
   let currencyListFirst: string[] = [];
   let currencyListSecond: string[] = [];
 
-  async function getCurrencyList(currency: string): Promise<void> {
+  async function getCurrencyList(
+    currency: string,
+    updateFunction: (currencies: string[]) => void,
+  ): Promise<void> {
     try {
       const data: CurrencyData = await fetchCurrencies(currency);
-      if (currency === "RUB") {
-        currencyListFirst = Object.keys(data.conversion_rates);
-        console.log(currencyListFirst);
-      } else {
-        currencyListSecond = Object.keys(data.conversion_rates);
-        console.log(currencyListSecond);
-      }
+      const currencyList = Object.keys(data.conversion_rates);
+      updateFunction(currencyList);
+      console.log(currencyListFirst);
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error("Could not load currency rates:", error.message);
@@ -29,8 +28,8 @@
   }
 
   onMount(() => {
-    getCurrencyList(currencyFirst);
-    getCurrencyList(currencySecond);
+    getCurrencyList(currencyFirst, (list) => (currencyListFirst = list));
+    getCurrencyList(currencySecond, (list) => (currencyListSecond = list));
   });
 </script>
 
