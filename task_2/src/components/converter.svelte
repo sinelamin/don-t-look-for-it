@@ -9,15 +9,59 @@
   let currencyListFirst: string[] = [];
   let currencyListSecond: string[] = [];
 
+  let firstInput: HTMLInputElement;
+  let secondInput: HTMLInputElement;
+
   async function getCurrencyList(
     currency: string,
     updateFunction: (currencies: string[]) => void,
   ): Promise<void> {
     try {
       const data: CurrencyData = await fetchCurrencies(currency);
-      const currencyList = Object.keys(data.conversion_rates);
+      const currencyList: string[] = Object.keys(data.conversion_rates);
+      console.log(data);
       updateFunction(currencyList);
-      console.log(currencyListFirst);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Could not load currency rates:", error.message);
+      } else {
+        console.error("Unknown error occurred");
+      }
+    }
+  }
+
+  function changeCurrency(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const newCurrency: string = selectElement.value;
+
+    if (selectElement.name === "currencyFirst") {
+      currencyFirst = newCurrency;
+    } else {
+      currencySecond = newCurrency;
+    }
+  }
+
+  async function getCurrencyValue(
+    event: Event,
+    currency: string,
+  ): Promise<void> {
+    try {
+      const selectElement = event.target as HTMLSelectElement;
+      const data: CurrencyData = await fetchCurrencies(currency);
+
+      if (selectElement.classList.contains("currency--first")) {
+        if (firstInput.value.length != 0) {
+          secondInput.value = `${+selectElement.value * data.conversion_rates[currencyFirst]}`;
+        } else {
+          secondInput.value = "0";
+        }
+      } else {
+        if (secondInput.value.length != 0) {
+          firstInput.value = `${+selectElement.value * data.conversion_rates[currencySecond]}`;
+        } else {
+          firstInput.value = "0";
+        }
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error("Could not load currency rates:", error.message);
@@ -36,8 +80,17 @@
 <main class="converter">
   <form class="converter-form">
     <div class="input__wrapper">
-      <input class="converter-form__input currency--first" type="number" />
-      <select class="currency-list" name="currency">
+      <input
+        bind:this={firstInput}
+        on:input={(event) => getCurrencyValue(event, currencySecond)}
+        class="converter-form__input currency--first"
+        type="number"
+      />
+      <select
+        on:change={changeCurrency}
+        class="currency-list"
+        name="currencyFirst"
+      >
         {#each currencyListFirst as currency}
           <option class="currency-list__item" value={currency}>
             {currency}
@@ -47,8 +100,17 @@
     </div>
 
     <div class="input__wrapper">
-      <input class="converter-form__input currency--second" type="number" />
-      <select class="currency-list" name="currency">
+      <input
+        bind:this={secondInput}
+        on:input={(event) => getCurrencyValue(event, currencyFirst)}
+        class="converter-form__input currency--second"
+        type="number"
+      />
+      <select
+        on:change={changeCurrency}
+        class="currency-list"
+        name="currencySecond"
+      >
         {#each currencyListSecond as currency}
           <option class="currency-list__item" value={currency}>
             {currency}
