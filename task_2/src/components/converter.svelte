@@ -19,7 +19,6 @@
     try {
       const data: CurrencyData = await fetchCurrencies(currency);
       const currencyList: string[] = Object.keys(data.conversion_rates);
-      console.log(data);
       updateFunction(currencyList);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -51,13 +50,13 @@
 
       if (selectElement.classList.contains("currency--first")) {
         if (firstInput.value.length != 0) {
-          secondInput.value = `${+selectElement.value * data.conversion_rates[currencyFirst]}`;
+          secondInput.value = `${+selectElement.value * data.conversion_rates[currencySecond]}`;
         } else {
           secondInput.value = "0";
         }
       } else {
         if (secondInput.value.length != 0) {
-          firstInput.value = `${+selectElement.value * data.conversion_rates[currencySecond]}`;
+          firstInput.value = `${+selectElement.value * data.conversion_rates[currencyFirst]}`;
         } else {
           firstInput.value = "0";
         }
@@ -82,7 +81,7 @@
     <div class="input__wrapper">
       <input
         bind:this={firstInput}
-        on:input={(event) => getCurrencyValue(event, currencySecond)}
+        on:input={(event) => getCurrencyValue(event, currencyFirst)}
         class="converter-form__input currency--first"
         type="number"
       />
@@ -102,7 +101,7 @@
     <div class="input__wrapper">
       <input
         bind:this={secondInput}
-        on:input={(event) => getCurrencyValue(event, currencyFirst)}
+        on:input={(event) => getCurrencyValue(event, currencySecond)}
         class="converter-form__input currency--second"
         type="number"
       />
